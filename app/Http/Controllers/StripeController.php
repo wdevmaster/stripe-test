@@ -1,31 +1,35 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-use Stripe\Stripe;
 use Stripe\Customer;
+use Illuminate\Http\Request;
+use Stripe\Stripe;
 use Stripe\PaymentIntent;
 
 class StripeController extends Controller
 {
     public function __construct() {
-        Stripe::setApiKey('sk_test_51LaSPgDHpqZ66oEuUKDUq7S9LTgtWwyQa78Ha6C3hwplyxvtR6gDmJuZnCTr3DbfajlEjZJQpIh8WqmbwUL2fU5S00OVFrSeE2');
+        Stripe::setApiKey(env('STRIPE_API_KEY'));
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
         try {
+
+            $jsonStr = file_get_contents('php://input');
+            $jsonObj = json_decode($jsonStr);
+
+            $precio = json_decode(json_encode($jsonObj->items[0]->precio), true);
+
             $customer = Customer::create();
 
             $paymentIntent = PaymentIntent::create([
                 'customer' => $customer->id,
                 'setup_future_usage' => 'off_session',
-                'amount' => $this->calculateOrderAmount($request->items),
+                'amount' => $precio,
                 'currency' => 'usd',
                 'automatic_payment_methods' => [
-                    'enabled' => true,
+                'enabled' => true,
                 ],
             ]);
 

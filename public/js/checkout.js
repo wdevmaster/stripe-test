@@ -2,10 +2,12 @@
 const stripe = Stripe("pk_test_51LaSPgDHpqZ66oEu3R0OPCe5Xw22vNeZ8dEA1mHci4uHujZtfIcZCFnQTMyBrKPADlkJmFftGvN8FLWMeA9rkVQN00Ao8pcmZb");
 
 // The items the customer wants to buy
-const items = [{ id: "xl-tshirt" }];
+const items = [{ precio: costo*100 }];
+let token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJvYmVkLm5hdmFycmV0ZSIsImV4cCI6MTY2MzMzNzc5NywiaWF0IjoxNjYzMzAxNzk3fQ.wfW3AI8QIO3BJuAoRpNn6NavdL67KQ0KptowTK8j2tQ';
 const fetchHeaders = { 
   "Content-Type": "application/json",
-  "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+  "Authorization": token,
+  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 }
 
 let elements;
@@ -39,10 +41,47 @@ async function handleSubmit(e) {stripe/stripe-php
     elements,
     confirmParams: {
       // Make sure to change this to your payment completion page
-      return_url: "http://stripesample.test:8007/index.html",
+      return_url: "https://bpbtraining-frontend-allusers.herokuapp.com/Stripe",
       receipt_email: document.getElementById("email").value,
     },
   });
+
+  $.ajax({
+    url: "https://bpbtraining-backend-api.herokuapp.com/api/v1/contratacioncoach/nueva",
+    headers: {
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJvYmVkLm5hdmFycmV0ZSIsImV4cCI6MTY2MzMxNjQ4NiwiaWF0IjoxNjYzMjgwNDg2fQ.48zSdwOf89KgInfq10rGEmbqQD7k7mbbCy3egbdrKpg",
+      "Access-Control-Allow-Origin": "*",
+    },
+    type: "POST",
+    contentType: "application/json",
+    crossDomain: true,
+    format: "json",
+    data: JSON.stringify({
+      "contratacionCoach": {
+        "fecha": dia,
+        "horaInicio": HHIni,
+        "horaFin": HHFin,
+        "idCoach": idCoach,
+        "idCliente": idUser,
+        "idClase": idClas
+      },
+      "intentosPago": {
+        "idCliente": idUser,
+        "idClase": idClas,
+        "resultado": paymentIntent.status,
+        "jsonResponse": JSON.stringify(paymentIntent).toString()
+      }
+    }),
+    success: function (json) {
+      console.log("archivo enviado exitosamente");
+    },
+    error: function (error) {
+      console.log('message Error' + JSON.stringify(error));
+    }
+  });
+
+
+
 
   // This point will only be reached if there is an immediate error when
   // confirming the payment. Otherwise, your customer will be redirected to
@@ -70,73 +109,35 @@ async function checkStatus() {
 
   const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
 
-  var contratacionCoach = {
-    "fecha": "2022-12-01",
-    "horaInicio": "12:00:00",
-    "horaFin": "13:00:00",
-    "idCoach": 1,
-    "idCliente": 4,
-    "idClase": 2
-  }.toString();
+  // var data = new FormData();
+  // data.append(contratacionCoach, contratacionCoach);
+  // data.append(intentosPago, intentosPago);
 
-  var intentosPago = {
-    "idCliente": 4,
-    "idClase": 2,
-    "resultado": paymentIntent.status,
-    "jsonResponse": JSON.stringify(paymentIntent).toString()
-  }.toString();
 
-  var data = new FormData();
-  data.append(contratacionCoach, contratacionCoach);
-  data.append(intentosPago, intentosPago);
+   
 
-  $.ajax({
-    url: "http://localhost:8083/api/v1/contratacioncoach/nueva",
-    headers: {
-      "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJvYmVkLm5hdmFycmV0ZSIsImV4cCI6MTY2MzMxNjQ4NiwiaWF0IjoxNjYzMjgwNDg2fQ.48zSdwOf89KgInfq10rGEmbqQD7k7mbbCy3egbdrKpg",
-      "Access-Control-Allow-Origin": "*",
-    },
-    type: "POST",
-    contentType: "application/json",
-    crossDomain: true,
-    format: "json",
-    data: JSON.stringify({
-      "contratacionCoach": {
-        "fecha": "2022-12-01",
-        "horaInicio": "12:00:00",
-        "horaFin": "13:00:00",
-        "idCoach": 1,
-        "idCliente": 4,
-        "idClase": 2
-      },
-      "intentosPago": {
-        "idCliente": 4,
-        "idClase": 2,
-        "resultado": paymentIntent.status,
-        "jsonResponse": JSON.stringify(paymentIntent).toString()
-      }
-    }),
-    success: function (json) {
-      console.log(json);
-    },
-    error: function (error) {
-      console.log('message Error' + JSON.stringify(error));
-    }
-  });
+
 
 
   switch (paymentIntent.status) {
     case "succeeded":
+     
+    
       showMessage("Payment succeeded!");
+      window.location.replace('/')
+
       break;
     case "processing":
       showMessage("Your payment is processing.");
+      
       break;
     case "requires_payment_method":
       showMessage("Your payment was not successful, please try again.");
+     
       break;
     default:
       showMessage("Something went wrong.");
+      
       break;
   }
 }
