@@ -12,7 +12,7 @@ class StripeController extends Controller
         Stripe::setApiKey(env('STRIPE_API_KEY'));
     }
 
-    public function store(Request $request)
+    public function create(Request $request)
     {
         try {
 
