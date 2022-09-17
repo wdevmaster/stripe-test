@@ -1,5 +1,6 @@
 // This is your test publishable API key.
 const stripe = Stripe("pk_test_51LaSPgDHpqZ66oEu3R0OPCe5Xw22vNeZ8dEA1mHci4uHujZtfIcZCFnQTMyBrKPADlkJmFftGvN8FLWMeA9rkVQN00Ao8pcmZb");
+var costo = 10;
 
 // The items the customer wants to buy
 const items = [{ precio: costo*100 }];
